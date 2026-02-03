@@ -1,0 +1,3 @@
+
+Iteration 1 erfolgreich.
+Fertig. Erfolgsrate: 100.0%
