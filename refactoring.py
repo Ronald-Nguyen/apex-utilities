@@ -162,20 +162,39 @@ def run_apex_tests(target_org=None):
     Level 2: Deployment Success, Tests Passed
     """
     
+    # Umgebungsvariablen für diesen Prozess anpassen
+    # Wir sagen der SF CLI: "Wir sind ein Roboter (CI), bitte keine bunten Emojis und Ladebalken."
+    env = os.environ.copy()
+    env["CI"] = "true"
+    env["SF_NO_COLOR"] = "true"
+    env["SF_DISABLE_AUTOUPDATE"] = "true"
+
     # --- LEVEL 0 CHECK: DEPLOYMENT ---
     deploy_cmd = "sf project deploy start --ignore-conflicts"
     if target_org:
         deploy_cmd += f" --target-org {target_org}"
         
     print(f" -> Deploying Code...")
-    deploy_res = subprocess.run(deploy_cmd, capture_output=True, text=True, shell=True)
+    
+    # WICHTIG: text=False (Binary Mode). Python fasst die Daten nicht an -> Kein Absturz.
+    deploy_res = subprocess.run(
+        deploy_cmd, 
+        capture_output=True, 
+        text=False,          # <--- Binary Mode!
+        shell=True, 
+        env=env              # <--- Saubere Umgebung
+    )
+    
+    # Manuelles Decodieren (Sicher)
+    stdout_str = deploy_res.stdout.decode('utf-8', errors='replace')
+    stderr_str = deploy_res.stderr.decode('utf-8', errors='replace')
     
     if deploy_res.returncode != 0:
         return {
             'level': 0,
             'success': False,
-            'stdout': deploy_res.stdout,
-            'stderr': f"DEPLOY FAILED (Level 0):\n{deploy_res.stderr}",
+            'stdout': stdout_str,
+            'stderr': f"DEPLOY FAILED (Level 0):\n{stderr_str}",
             'returncode': deploy_res.returncode
         }
 
@@ -186,21 +205,30 @@ def run_apex_tests(target_org=None):
     
     print(f" -> Running Tests...")
     try:
-        result = subprocess.run(test_cmd, capture_output=True, text=True, shell=True)
+        # Auch hier: text=False
+        result = subprocess.run(
+            test_cmd, 
+            capture_output=True, 
+            text=False,      # <--- Binary Mode!
+            shell=True,
+            env=env
+        )
         
-        # Determine success based on return code AND output text
+        # Manuelles Decodieren
+        stdout_str = result.stdout.decode('utf-8', errors='replace')
+        stderr_str = result.stderr.decode('utf-8', errors='replace')
+        
         tests_passed = result.returncode == 0
-        if "Test Run Failed" in result.stdout or "Fails" in result.stdout:
+        if "Test Run Failed" in stdout_str or "Fails" in stdout_str:
             tests_passed = False
         
-        # If we are here, Deployment succeeded, so we are at least Level 1.
         current_level = 2 if tests_passed else 1
         
         return {
             'level': current_level,
             'success': tests_passed,
-            'stdout': result.stdout,
-            'stderr': result.stderr,
+            'stdout': stdout_str,
+            'stderr': stderr_str,
             'returncode': result.returncode
         }
 
