@@ -246,7 +246,7 @@ def gemini_generate(final_prompt: str) -> str:
     if not response_text:
         raise ValueError("Leere Antwort erhalten")
 
-    print ("Token used: " + str(response.usage_metadata))
+    # print ("Token used: " + str(response.usage_metadata))
     return response_text
 
 def mistral_generate(prompt: str) -> str:
