@@ -1,0 +1,43 @@
+Project Structure & Complexity Report
+=====================================
+Type   | File Path                                                                | Compl. | LOC
+----------------------------------------------------------------------------------------------------
+[PROD] | ./force-app/main\utilities\classes\DatabaseUtils.cls                     | 1      | 30
+[PROD] | ./force-app/main\utilities\classes\DateUtils.cls                         | 2      | 48
+[PROD] | ./force-app/main\utilities\classes\Stack.cls                             | 3      | 35
+[PROD] | ./force-app/main\utilities\configuration-management\classes\ConfigurationManager.cls | 0      | 102
+[PROD] | ./force-app/main\utilities\configuration-management\classes\DeletionValidator.cls | 1      | 19
+[PROD] | ./force-app/main\utilities\logging\classes\EventBufferLogAdapter.cls     | 5      | 90
+[PROD] | ./force-app/main\utilities\logging\classes\LogMessage.cls                | 3      | 49
+[PROD] | ./force-app/main\utilities\logging\classes\LogWriter.cls                 | 0      | 29
+[PROD] | ./force-app/main\utilities\logging\classes\LoggedQueueable.cls           | 3      | 41
+[PROD] | ./force-app/main\utilities\logging\classes\LoggedSchedulable.cls         | 4      | 64
+[PROD] | ./force-app/main\utilities\logging\classes\Logger.cls                    | 6      | 123
+[PROD] | ./force-app/main\utilities\logging\classes\LoggerAdapter.cls             | 1      | 52
+[PROD] | ./force-app/main\utilities\logging\classes\LoggerFactory.cls             | 0      | 13
+[PROD] | ./force-app/main\utilities\logging\classes\QueueableScheduler.cls        | 0      | 26
+[PROD] | ./force-app/main\utilities\logging\profiler\classes\ApexProfiler.cls     | 0      | 68
+[PROD] | ./force-app/main\utilities\logging\profiler\classes\OrgLimitsProfiler.cls | 1      | 16
+[PROD] | ./force-app/main\utilities\logging\profiler\classes\OrgLimitsProfilingReportRunner.cls | 2      | 30
+[PROD] | ./force-app/main\utilities\logging\profiler\classes\Profiler.cls         | 10     | 97
+[PROD] | ./force-app/main\utilities\parsers\classes\DisplayTypeParser.cls         | 3      | 79
+[PROD] | ./force-app/main\utilities\parsers\classes\Parsable.cls                  | 0      | 10
+[PROD] | ./force-app/main\utilities\schema\classes\InvalidFieldException.cls      | 0      | 9
+[PROD] | ./force-app/main\utilities\schema\classes\PicklistValueSet.cls           | 1      | 28
+[PROD] | ./force-app/main\utilities\schema\classes\Relationship.cls               | 5      | 55
+[PROD] | ./force-app/main\utilities\schema\classes\SObjectRecordTypes.cls         | 10     | 59
+[PROD] | ./force-app/main\utilities\schema\classes\SObjectWrapper.cls             | 12     | 114
+[PROD] | ./force-app/main\utilities\schema\classes\SchemaFacade.cls               | 11     | 124
+[PROD] | ./force-app/main\utilities\schema\classes\SecureSObjectWrapper.cls       | 7      | 34
+[PROD] | ./force-app/main\utilities\schema\classes\StateCountryCodeMapper.cls     | 0      | 24
+[PROD] | ./force-app/main\utilities\string-utilities\classes\CsvBuilder.cls       | 18     | 111
+[PROD] | ./force-app/main\utilities\string-utilities\classes\QueryBuilder.cls     | 5      | 86
+[PROD] | ./force-app/main\utilities\string-utilities\classes\StringBuilder.cls    | 7      | 81
+[PROD] | ./force-app/main\utilities\trigger-framework\classes\SObjectTriggerWrapper.cls | 4      | 36
+[PROD] | ./force-app/main\utilities\trigger-framework\classes\TriggerDispatcher.cls | 14     | 104
+[PROD] | ./force-app/main\utilities\trigger-framework\classes\TriggerHandler.cls  | 6      | 26
+[PROD] | ./force-app/main\utilities\trigger-framework\classes\Triggerable.cls     | 0      | 28
+----------------------------------------------------------------------------------------------------
+SUMMARY PROD  (35 files): Complexity: 145    | LOC: 1940
+SUMMARY TEST  (0 files): Complexity: 0      | LOC: 0
+GRAND TOTAL   (35 files): Complexity: 145    | LOC: 1940
