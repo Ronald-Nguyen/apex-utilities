@@ -6,6 +6,7 @@
 .sfdx/
 .localdevserver/
 .sf/
+
 # Logs
 logs
 *.log
@@ -45,3 +46,6 @@ test-results
 src
 pmd-results.csv
 package.xml
+.sf/config.json
+
+backup_original

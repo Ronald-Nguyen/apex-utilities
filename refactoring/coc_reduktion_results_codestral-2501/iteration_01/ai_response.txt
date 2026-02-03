@@ -1,0 +1,54 @@
+I'll analyze the code and identify areas where cognitive complexity can be reduced. I'll focus on one method at a time to ensure each change is clear and correct.
+
+Looking at the code, I see several areas where cognitive complexity can be reduced:
+
+1. `DatabaseUtils.cls` - The `getErrorString` method has a simple structure but could benefit from early returns.
+2. `DateUtils.cls` - The `getNow` and `getToday` methods have simple conditional logic that could be simplified.
+3. `Stack.cls` - The `pop` method has a simple structure but could benefit from early returns.
+4. `ConfigurationManager.cls` - Several methods have simple conditional logic that could be simplified.
+5. `DeletionValidator.cls` - The `register` method has a simple structure but could benefit from early returns.
+6. `EventBufferLogAdapter.cls` - The `log` method has a simple structure but could benefit from early returns.
+7. `LoggedQueueable.cls` - The `execute` method has a simple structure but could benefit from early returns.
+8. `LoggedSchedulable.cls` - The `execute` method has a simple structure but could benefit from early returns.
+9. `Logger.cls` - Several methods have simple conditional logic that could be simplified.
+10. `LoggerAdapter.cls` - The `log` method has a simple structure but could benefit from early returns.
+
+I'll start with the `DatabaseUtils.cls` file as it has the simplest structure for refactoring.
+
+File `main\utilities\classes\DatabaseUtils.cls`:
+```apex
+/**
+ * @author Gavin Palmer
+ * @date 2019-03-13
+ * @description This class is a utility for the Database class
+ *
+ **/
+public inherited sharing class DatabaseUtils {
+    /**
+     * @description This is the seperator to be used when concatenating the string, defaults to unix new line character
+     */
+    public static String errorStringSeperator = '\n';
+
+    /**
+     * @description This function will concatenate the errors output from the database actions
+     * @param errors a list of database errors that are to be concatenated
+     * @return a concatenated list of the errors passed into the function
+     * @example
+     * Database.SaveResult results = Database.insert(newAccount, false);
+     * String errors = DatabaseUtils.getErrorString(results.getErrors());
+     *
+     **/
+    public static String getErrorString(List<Database.Error> errors) {
+        if (errors == null || errors.isEmpty()) {
+            return '';
+        }
+
+        final StringBuilder fullErrors = new StringBuilder();
+        fullErrors.setSeparator(errorStringSeperator);
+        for (Database.Error error : errors) {
+            fullErrors.append(error.getMessage());
+        }
+        return fullErrors.toString();
+    }
+}
+```

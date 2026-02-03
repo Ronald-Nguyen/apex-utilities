@@ -156,55 +156,56 @@ def apply_changes(project_dir: Path | str, files: dict[str, str]) -> None:
 
 def run_apex_tests(target_org=None):
     """
-    1. Deployt den Code: sf project deploy start --ignore-conflicts
-    2. Führt Tests aus: sf apex run test ...
+    Returns a dictionary with 'level':
+    Level 0: Deployment Failed (Compilation Error)
+    Level 1: Deployment Success, Tests Failed
+    Level 2: Deployment Success, Tests Passed
     """
     
-    # --- SCHRITT 1: DEPLOY ---
-    # wenn wir Dateien lokal ändern und sofort hochladen wollen.
-    deploy_cmd = "sf project deploy start "
-    
+    # --- LEVEL 0 CHECK: DEPLOYMENT ---
+    deploy_cmd = "sf project deploy start --ignore-conflicts"
     if target_org:
         deploy_cmd += f" --target-org {target_org}"
         
-    print(f" -> Deploying Code ({deploy_cmd})...")
-    
-    # shell=True ist WICHTIG unter Windows, damit 'sf' gefunden wird!
+    print(f" -> Deploying Code...")
     deploy_res = subprocess.run(deploy_cmd, capture_output=True, text=True, shell=True)
     
     if deploy_res.returncode != 0:
         return {
+            'level': 0,
             'success': False,
             'stdout': deploy_res.stdout,
-            'stderr': f"DEPLOY FAILED (Syntax Error?):\n{deploy_res.stderr}",
+            'stderr': f"DEPLOY FAILED (Level 0):\n{deploy_res.stderr}",
             'returncode': deploy_res.returncode
         }
 
-    # --- SCHRITT 2: TESTS ---
+    # --- LEVEL 1 & 2 CHECK: TESTS ---
     test_cmd = "sf apex run test --wait 10 --result-format human --code-coverage"
-    
     if target_org:
         test_cmd += f" --target-org {target_org}"
     
-    print(f" -> Running Tests ({test_cmd})...")
-        
+    print(f" -> Running Tests...")
     try:
-        # Auch hier shell=True
         result = subprocess.run(test_cmd, capture_output=True, text=True, shell=True)
         
-        is_success = result.returncode == 0
+        # Determine success based on return code AND output text
+        tests_passed = result.returncode == 0
         if "Test Run Failed" in result.stdout or "Fails" in result.stdout:
-            is_success = False
+            tests_passed = False
+        
+        # If we are here, Deployment succeeded, so we are at least Level 1.
+        current_level = 2 if tests_passed else 1
         
         return {
-            'success': is_success,
+            'level': current_level,
+            'success': tests_passed,
             'stdout': result.stdout,
             'stderr': result.stderr,
             'returncode': result.returncode
         }
 
     except Exception as e:
-        return {'success': False, 'stdout': '', 'stderr': str(e), 'returncode': -1}
+        return {'level': 0, 'success': False, 'stdout': '', 'stderr': str(e), 'returncode': -1}
 
 def save_results(iteration: int, result_dir: Path, files: dict, test_result: dict, response_text: str) -> None:
     """Speichert die Ergebnisse einer Iteration."""

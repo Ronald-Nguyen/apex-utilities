@@ -1,3 +1,4 @@
 {
-  "target-dev-hub": "MyDevHub"
+  "target-dev-hub": "MyDevHub",
+  "target-org": "MyTestOrg"
 }

@@ -187,6 +187,7 @@ Code:
 
 File `main\utilities\classes\DatabaseUtils.cls`:
 ```apex
+
 /**
  * @author Gavin Palmer
  * @date 2019-03-13
@@ -209,6 +210,10 @@ public inherited sharing class DatabaseUtils {
      *
      **/
     public static String getErrorString(List<Database.Error> errors) {
+        if (errors == null || errors.isEmpty()) {
+            return '';
+        }
+
         final StringBuilder fullErrors = new StringBuilder();
         fullErrors.setSeparator(errorStringSeperator);
         for (Database.Error error : errors) {
@@ -216,8 +221,7 @@ public inherited sharing class DatabaseUtils {
         }
         return fullErrors.toString();
     }
-}
-```
+}```
 
 
 File `main\utilities\classes\DateUtils.cls`:
