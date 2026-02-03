@@ -10,7 +10,7 @@ from unittest import result
 
 REFACTORING = 'refactoring/coc_reduktion'
 PATH = 'force-app'
-ITERATIONS = 3
+ITERATIONS = 1
 GEMINI3 = 'gemini-3-pro-preview'
 GEMINI2 = 'gemini-2.5-flash'
 LLAMA = 'llama-3.3-70b-versatile'
@@ -87,7 +87,7 @@ def get_all_apex_files(project_dir: Path) -> str:
     for root, dirs, files in os.walk(project_dir):
         dirs[:] = [d for d in dirs if not d.startswith('.') and d not in {'__pycache__', 'tests', 'pathlib2.egg-info'}]
         for file in files:
-            if "test" in file:
+            if "test" in file.lower():
                 continue
             if file.endswith('.cls') or file.endswith('.trigger'):
                 file_path = Path(root) / file
@@ -154,22 +154,64 @@ def apply_changes(project_dir: Path | str, files: dict[str, str]) -> None:
         except Exception as e:
             print(f" Fehler beim Schreiben von {filename}: {e}")
 
-def run_pytest():
-    """Führt pytest aus und gibt das Ergebnis zurück."""
+def run_apex_tests(target_org=None):
+    """
+    Führt Salesforce Apex Tests aus.
+    Entspricht: sf apex run test --code-coverage --result-format human --wait 10
+    """
+    cmd = [
+        "sf", "apex", "run", "test",
+        "--code-coverage",
+        "--result-format", "json", # JSON ist einfacher zu parsen als human
+        "--wait", "20"
+    ]
+    
+    if target_org:
+        cmd.extend(["--target-org", target_org])
+    
+    print(" Starte Apex Tests (Deploy & Run)... das kann dauern...")
+    
+    # Zuerst müssen wir sicherstellen, dass der Code auf der Org ist!
+    # Apex kann man nicht lokal ausführen wie Python. Es MUSS auf die Org.
+    deploy_cmd = ["sf", "project", "deploy", "start"]
+    if target_org:
+        deploy_cmd.extend(["--target-org", target_org])
+        
     try:
-        result = subprocess.run(
-            ['pytest'], 
-            capture_output=True, 
-            text=True, 
-        )
+        # 1. Deploy
+        print(" -> Deploying Code...")
+        deploy_res = subprocess.run(deploy_cmd, capture_output=True, text=True)
+        if deploy_res.returncode != 0:
+            return {
+                'success': False,
+                'stdout': deploy_res.stdout,
+                'stderr': f"DEPLOY FAILED:\n{deploy_res.stderr}",
+                'returncode': deploy_res.returncode
+            }
+
+        # 2. Run Tests
+        print(" -> Running Tests...")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        # SF CLI gibt manchmal Exit Code 100 zurück bei Testfehlern, was okay ist für uns
+        # Wir müssen das JSON parsen um zu sehen ob "outcome": "Failed" ist
+        
+        is_success = result.returncode == 0
+        
+        # Einfacher Check im JSON Output String (quick & dirty aber robust)
+        if '"outcome": "Failed"' in result.stdout or '"outcome":"Failed"' in result.stdout:
+            is_success = False
+        
         return {
-            'success': result.returncode == 0,
+            'success': is_success,
             'stdout': result.stdout,
             'stderr': result.stderr,
             'returncode': result.returncode
         }
+
     except Exception as e:
         return {'success': False, 'stdout': '', 'stderr': str(e), 'returncode': -1}
+
 
 def save_results(iteration: int, result_dir: Path, files: dict, test_result: dict, response_text: str) -> None:
     """Speichert die Ergebnisse einer Iteration."""
@@ -238,16 +280,6 @@ def mistral_generate(prompt: str) -> str:
     )
     return res.choices[0].message.content
 
-
-def ollama_generate(final_prompt: str) -> str:
-    response: ChatResponse = chat(model='qwen2.5-coder:7b', messages=[
-    {
-        'role': 'user',
-        'content': final_prompt,
-    },
-    ])
-    return response.message.content
-
 def main():
     YOUR_PROMPT = PROMPT_TEMPLATE
     print(f"{'='*60}\nStarte Refactoring-Experiment\n{'='*60}\n")
@@ -256,7 +288,7 @@ def main():
     backup_project(PROJECT_DIR, backup_dir)
 
     project_structure = get_project_structure(PROJECT_DIR)
-    code_block = get_all_python_files(PROJECT_DIR)
+    code_block = get_all_apex_files(PROJECT_DIR)
 
     final_prompt = f"{YOUR_PROMPT}\n\nStruktur:\n{project_structure}\n\nCode:\n{code_block}"
     successful_iterations = 0
@@ -275,15 +307,13 @@ def main():
                 response_text = gemini_generate(final_prompt)
             elif LLM_API_KEY == GROQ_API_KEY:
                 response_text = groq_generate(final_prompt)
-            else:
-                response_text = ollama_generate(final_prompt)
 
             files = parse_ai_response(response_text)
             if not files:
                 continue
 
             apply_changes(PROJECT_DIR, files)
-            test_result = run_pytest()
+            test_result = run_apex_tests()
 
             if test_result['success']:
                 successful_iterations += 1
