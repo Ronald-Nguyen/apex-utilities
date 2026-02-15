@@ -1,7 +1,5 @@
-Rename
 Task Description
-You are a strict code refactoring engine. You follow all rules exactly as written. Your task is to perform a refactoring change in an Apex project. A method needs to be renamed.
-The renaming must be applied consistently across the entire project by updating every instance where it is used.
+You are a strict code refactoring engine. You follow all rules exactly as written. Your task is to refactor an Apex project by applying the "Replace Nested Conditional with Guard Clauses" pattern to improve readability and reduce cognitive complexity.
 
 Please note:
 1. The code must still function perfectly after the refactoring.
@@ -16,92 +14,143 @@ Please note:
 10. Every response must include meaningful modifications, improvements, or transformations. Returning the same code, even partially or with superficial edits, is strictly prohibited.
 11. Your final output must pass the existing test suite. If your changes would cause any test to fail, revise your refactor until all tests pass.
 
-Examples of renaming tasks:
+Examples:
 
 Example 1:
 Original Code:
-File `CalculateSum.cls`:
+File `OrderProcessor.cls`:
 ```apex
-public class CalculateSum {
-    public static Integer calculateSum(Integer a, Integer b) {
-        return a + b;
+public class OrderProcessor {
+    public static Decimal processOrder(OrderWrapper order) {
+        if (order != null) {
+            if (order.isValid()) {
+                if (order.hasItems()) {
+                    return order.calculateTotal();
+                } else {
+                    return 0;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
-    public static void runExample() {
-        System.debug(calculateSum(2, 3));
+    public class OrderWrapper {
+        public Boolean isValid() { return true; }
+        public Boolean hasItems() { return true; }
+        public Decimal calculateTotal() { return 0; }
     }
 }
 ```
 
 Task:
-1. Rename the method `calculateSum` in the file: `CalculateSum.cls` to `add`.
-2. Update every relevant occurrence across the entire project.
-3. Output format (for EACH modified file):
+1. Analyze the provided codebase to identify methods containing deeply nested conditional logic, specifically if else blocks with a nesting depth greater than 2.
+2. Evaluate the complexity of these methods and select the two candidates with the highest cognitive complexity or deepest nesting.
+3. Refactor these two selected methods by applying the "Replace Nested Conditional with Guard Clauses" pattern. Invert conditional checks to handle edge cases, errors, or early exits immediately using return, continue, break, or throw. Flatten the remaining happy path logic to reduce indentation levels.
 
-File `CalculateSum.cls`:
+Output:
+File `OrderProcessor.cls`:
 ```apex
-public class CalculateSum {
-    public static Integer add(Integer a, Integer b) {
-        return a + b;
+public class OrderProcessor {
+    public static Decimal processOrder(OrderWrapper order) {
+        if (order == null) {
+            return null;
+        }
+        if (!order.isValid()) {
+            return null;
+        }
+        if (!order.hasItems()) {
+            return 0;
+        }
+        return order.calculateTotal();
     }
 
-    public static void runExample() {
-        System.debug(add(2, 3));
+    public class OrderWrapper {
+        public Boolean isValid() { return true; }
+        public Boolean hasItems() { return true; }
+        public Decimal calculateTotal() { return 0; }
     }
 }
 ```
 
 Example 2:
 Original Code:
-File `FindMaximum.cls`:
+File `UserProcessor.cls`:
 ```apex
-public class FindMaximum {
-    public static Integer findMaximum(List<Integer> numbers) {
-        Integer maxVal = null;
-        for (Integer n : numbers) {
-            if (maxVal == null || n > maxVal) {
-                maxVal = n;
+public class UserProcessor {
+    public static List<String> processUsers(List<UserWrapper> users) {
+        List<String> activeEmails = new List<String>();
+        for (UserWrapper user : users) {
+            if (user.isActive) {
+                if (user.hasEmail) {
+                    if (!user.isBanned) {
+                        activeEmails.add(user.email);
+                    }
+                }
             }
         }
-        return maxVal;
+        return activeEmails;
     }
 
-    public static void runExample() {
-        Integer result = findMaximum(new List<Integer>{1, 2, 3});
-        System.debug(result);
+    public class UserWrapper {
+        public Boolean isActive;
+        public Boolean hasEmail;
+        public Boolean isBanned;
+        public String email;
     }
 }
 ```
 
 Task:
-1. Rename the method `findMaximum` in the file: `FindMaximum.cls` to `getMax`.
-2. Update every relevant occurrence across the entire project.
-3. Output format (for EACH modified file):
+1. Analyze the provided codebase to identify methods containing deeply nested conditional logic, specifically if else blocks with a nesting depth greater than 2.
+2. Evaluate the complexity of these methods and select the two candidates with the highest cognitive complexity or deepest nesting.
+3. Refactor these two selected methods by applying the "Replace Nested Conditional with Guard Clauses" pattern. Invert conditional checks to handle edge cases, errors, or early exits immediately using return, continue, break, or throw. Flatten the remaining happy path logic to reduce indentation levels.
 
-File `FindMaximum.cls`:
+Output:
+File `UserProcessor.cls`:
 ```apex
-public class FindMaximum {
-    public static Integer getMax(List<Integer> numbers) {
-        Integer maxVal = null;
-        for (Integer n : numbers) {
-            if (maxVal == null || n > maxVal) {
-                maxVal = n;
+public class UserProcessor {
+    public static List<String> processUsers(List<UserWrapper> users) {
+        List<String> activeEmails = new List<String>();
+        for (UserWrapper user : users) {
+            // Guard Clause 1: Handle inactive users immediately
+            if (!user.isActive) {
+                continue;
             }
+
+            // Guard Clause 2: Handle users without email immediately
+            if (!user.hasEmail) {
+                continue;
+            }
+
+            // Guard Clause 3: Handle banned users immediately
+            if (user.isBanned) {
+                continue;
+            }
+
+            // Happy Path: No indentation needed here
+            activeEmails.add(user.email);
         }
-        return maxVal;
+        return activeEmails;
     }
 
-    public static void runExample() {
-        Integer result = getMax(new List<Integer>{1, 2, 3});
-        System.debug(result);
+    public class UserWrapper {
+        public Boolean isActive;
+        public Boolean hasEmail;
+        public Boolean isBanned;
+        public String email;
     }
 }
 ```
 
 Your Task:
-1. Rename the method `fromRefrenceField` in the file: `Relationship.cls` to `fromReferenceField`
-2. Update every relevant occurrence across the entire project.
-3. For EACH modified file, respond exactly in the following format:
+1. Analyze the provided codebase to identify methods containing deeply nested conditional logic, specifically if else blocks with a nesting depth greater than 2.
+2. Evaluate the complexity of these methods and select the two candidates with the highest cognitive complexity or deepest nesting.
+3. Refactor these two selected methods by applying the "Replace Nested Conditional with Guard Clauses" pattern. Invert conditional checks to handle edge cases, errors, or early exits immediately using return, continue, break, or throw. Flatten the remaining happy path logic to reduce indentation levels.
+
+For EACH modified file, respond exactly in the following format:
 
 File `Filename.cls`:
 ```apex
@@ -550,6 +599,9 @@ public abstract inherited sharing class LoggedSchedulable implements Schedulable
 
 File `main\utilities\logging\classes\Logger.cls`:
 ```apex
+
+
+
 @SuppressWarnings('PMD.ExcessivePublicCount')
 public without sharing class Logger {
     private static final String MESSAGE_FORMAT = 'An error has occured in the class {0} with the message: {1}';
@@ -565,6 +617,7 @@ public without sharing class Logger {
         this.loggerAdapter.setType(type);
     }
 
+    
     public void debug(String messageToLog) {
         loggerAdapter.log(loggerAdapter.debugLevel(), (new LogMessage(messageToLog)).toString());
     }
@@ -621,6 +674,7 @@ public without sharing class Logger {
         error((new LogMessage(exceptionToLog)).toString(), recordId);
     }
 
+    
     public void close() {
         runApexPofiling();
         loggerAdapter.close();
@@ -628,13 +682,15 @@ public without sharing class Logger {
 
     private void runApexPofiling() {
         Profiler profiler = new ApexProfiler();
+        String profilingReport = profiler.generateProfilingReport();
         if (profiler.isBreachingWarning()) {
-            warn(profiler.generateProfilingReport());
+            warn(profilingReport);
         } else {
-            info(profiler.generateProfilingReport());
+            info(profilingReport);
         }
     }
-}```
+}
+```
 
 
 File `main\utilities\logging\classes\LoggerAdapter.cls`:

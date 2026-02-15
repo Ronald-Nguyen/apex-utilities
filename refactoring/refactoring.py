@@ -31,6 +31,7 @@ DEFAULT_REFACTORING = "guard_clauses"
 
 PATH = 'force-app'
 ITERATIONS = 1
+GEMMA = 'gemma-3-27b-it'
 GEMINI3 = 'gemini-3-pro-preview'
 GEMINI2 = 'gemini-2.5-flash'
 LLAMA = 'llama-3.3-70b-versatile'
@@ -38,12 +39,12 @@ MISTRAL = 'mistral-large-2512'
 CODESTRAL = 'codestral-2501'
 MODEL_OLLAMA = 'devstral-2_123b-cloud'
 MODEL_GROQ = LLAMA
-MODEL_GEMINI = GEMINI3
+MODEL_GEMINI = GEMMA
 MODEL_MISTRAL = CODESTRAL
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 MISTRAL_API_KEY = os.environ.get('MISTRAL_API_KEY')
-LLM_API_KEY = MISTRAL_API_KEY
+LLM_API_KEY = GEMINI_API_KEY    
 client = None
 MODEL = None
 
@@ -433,14 +434,16 @@ def mistral_generate(prompt: str) -> tuple[str, dict | None]:
     return res.choices[0].message.content, usage
 
 def _is_rate_limit_error(e: Exception) -> bool:
-    msg = str(e)
-    if "Status 429" in msg:
+    msg = str(e).lower()
+    if "status 429" in msg:
         return True
     if "rate limit" in msg.lower():
         return True
     if '"type":"rate_limited"' in msg:
         return True
     if '"code":"1300"' in msg:
+        return True
+    if 'error' in msg:
         return True
     return False
 
